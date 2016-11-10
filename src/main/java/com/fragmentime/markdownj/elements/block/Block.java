@@ -6,9 +6,9 @@ import com.fragmentime.markdownj.elements.Element;
  * Created by Beancan on 2016/10/27.
  */
 public class Block extends Element {
-    @Override
-    public String getType() {
-        return Element.BLOCK;
+
+    public Block() {
+        super.setType(Element.BLOCK);
     }
 
     public static boolean isBlock(String content) {
@@ -17,5 +17,20 @@ public class Block extends Element {
 
     public boolean isBlockEnd() {
         return super.getData().get(super.getData().size() - 1).trim().equals("```") && super.getData().size() > 1;
+    }
+
+    @Override
+    public String render() {
+        StringBuilder sb = new StringBuilder();
+        String languageType = this.getData().get(0).trim().substring(3);
+        sb.append("<pre><code class=\"language-").append(languageType).append("\"").append(">").append("\n");
+        for (int i = 1; i < this.getData().size() - 1; i++) {
+            sb.append(this.getData().get(i)).append("\n");
+        }
+        sb.append("</code></pre>").append("\n");
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
     }
 }

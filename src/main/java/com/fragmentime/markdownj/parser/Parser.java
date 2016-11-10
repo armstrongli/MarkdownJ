@@ -16,12 +16,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by Beancan on 2016/10/26.
  */
 public class Parser {
+
     public static String parse(String fileName) throws Exception {
         BufferedReader br = null;
         Root root = new Root();
@@ -46,6 +46,8 @@ public class Parser {
         for (String item : result) {
             System.out.println(item);
         }
+
+        System.out.println(root.render());
         return null;
     }
 
@@ -82,7 +84,7 @@ public class Parser {
         }
     }
 
-    private static Element getRightLeftest(Element element) {
+    public static Element getRightLeftest(Element element) {
         if (!element.hasRight()) {
             return null;
         }
@@ -201,7 +203,7 @@ public class Parser {
                     li.setParent(element);
                     continue;
                 }
-                if(!List.isList(item)){
+                if (!List.isList(item)) {
                     rLeftest.append(item);
                     continue;
                 }
@@ -211,13 +213,13 @@ public class Parser {
                     rLeftest.setLeft(li);
                     li.setParent(rLeftest);
                 } else {
-                    if(rLeftest instanceof Li){
+                    if (rLeftest instanceof Li) {
                         // new list
                         List list = new List();
                         list.append(item);
                         rLeftest.setLeft(list);
                         list.setParent(rLeftest);
-                    }else{
+                    } else {
                         // append
                         rLeftest.append(item);
                     }
@@ -227,6 +229,24 @@ public class Parser {
         }
         analyzeList(element.getLeft());
         analyzeList(element.getRight());
+    }
+
+    private static final String KEY_CHARS = "*_~`";
+
+    private static Element analyzeText(Element text) {
+        if (text == null || text.getData().size() == 0) {
+            return null;
+        }
+
+        StringBuffer sb = new StringBuffer("");
+        for (String item : text.getData()) {
+            sb.append(item);
+        }
+        if (Text.hasImage(sb.toString())) {
+
+        }
+
+        return null;
     }
 
     private static java.util.List<String> iterator(Element element) {

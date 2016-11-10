@@ -15,6 +15,7 @@ public class Element {
     public static final String TABLE = "table";
     public static final String TEXT = "text";
     public static final String LI = "li";
+    public static final String KEY = "key";
 
     private List<String> data = new ArrayList<String>();
     private Element parent;
@@ -36,6 +37,10 @@ public class Element {
 
     public List<String> getData() {
         return this.data;
+    }
+
+    protected void setData(List<String> data) {
+        this.data = data;
     }
 
     public Element getLeft() {
@@ -68,4 +73,19 @@ public class Element {
         return this.type;
     }
 
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String render() {
+        StringBuffer sb = new StringBuffer();
+        if (this.hasRight()) {
+            sb.append(this.getRight().render());
+        }
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
 }
