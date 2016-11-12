@@ -11,6 +11,10 @@ import java.util.*;
  */
 public class TextAnalyser {
     private static class TextIndexer implements Comparable<TextIndexer> {
+        private TextIndexer parent;
+        private TextIndexer left;
+        private TextIndexer right;
+
         private final String type;
         private final int start;
         private final int end;
@@ -35,70 +39,113 @@ public class TextAnalyser {
         this.text = text;
     }
 
-    private void analyzeElementsTypes() {
+    private TextIndexer analyzeElementsTypes() {
+        // analyze types
         List<Analyser> analysers = Arrays.asList(new BlockAnalyser(), new ImageAnalyser(), new LinkAnalyser(), new BoldAnalyser(), new ItalicAnalyser());
 
         StringBuffer multiplyStrings = new StringBuffer(this.text);
         for (Analyser item : analysers) {
-//            Log.log(multiplyStrings.toString());
+            // Log.log(multiplyStrings.toString());
             multiplyStrings = analyzeAndMultiply(multiplyStrings, item, this.indexers);
         }
         Collections.sort(this.indexers);
         for (TextIndexer item : this.indexers) {
             Log.log(item.type + ": " + item.start + "-" + item.end);
         }
-    }
 
-    public void analyze() {
-        this.analyzeElementsTypes();
-
-        Element text = new Element(), current = null;
-        text.append(this.text);
-
+        // build render tree and fill blanks
+        TextIndexer current = new TextIndexer(Element.TEXT, 0, this.text.length());
+        TextIndexer root = current;
         for (TextIndexer item : this.indexers) {
-            if (current == null) {
-                Text e = new Text();
-                e.append(this.text.substring(item.start, item.end));
-                e.setType(item.type);
-                current = e;
-                this.stack.push(item);
+            if (item.start < current.end) {
+                if (item.start > current.start) {
+                    TextIndexer ti = new TextIndexer(Element.TEXT, current.start, item.start);
+                    current.right = ti;
+                    ti.parent = current;
+                    current = ti;
+                }
+                if (current.parent != null && current == current.parent.right) {
+                    current.left = item;
+                    item.parent = current;
+                } else {
+                    current.right = item;
+                    item.parent = current;
+                }
+                current = item;
             } else {
-                TextIndexer previousIndex = null;
                 while (true) {
-                    if (this.stack.size() == 0) {
-                        break;
-                    }
-                    previousIndex = this.stack.pop();
-                    if (item.start > previousIndex.end) {
-                        while (true) {
-                            if (current.getParent() == null) {
-                                break;
-                            }
-                            if (current == current.getParent().getRight()) {
-                                current = current.getParent();
-                                break;
-                            } else {
-                                current = current.getParent();
-                            }
+                    TextIndexer parentOfCurrent = current;
+                    while (true) {
+                        if (parentOfCurrent == parentOfCurrent.parent.right) {
+                            parentOfCurrent = parentOfCurrent.parent;
+                            break;
+                        } else {
+                            parentOfCurrent = parentOfCurrent.parent;
                         }
-                    } else {
-                        this.stack.push(previousIndex);
+                    }
+                    if (item.end < parentOfCurrent.end) {
+                        if (item.start > current.end) {
+                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, item.start);
+                            current.left = filler;
+                            filler.parent = current;
+                            current = filler;
+                        }
+                        item.parent = current;
+                        current.left = item;
+                        current = item;
                         break;
+                    } else {
+                        if (parentOfCurrent.end > current.end) {
+                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, parentOfCurrent.end);
+                            current.left = filler;
+                            filler.parent = current;
+                        }
+                        current = parentOfCurrent;
                     }
                 }
-                Text e = new Text();
-                e.append(this.text.substring(item.start, item.end));
-                e.setType(item.type);
-                current.setLeft(e);
-                e.setParent(current);
-                current = e;
-                this.stack.push(item);
             }
         }
-        while (current != null && current.getParent() != null) {
-            current = current.getParent();
+        if (current.end < this.text.length()) {
+            while (true) {
+                TextIndexer parentOfCurrent = current;
+                while (true) {
+                    if (parentOfCurrent == parentOfCurrent.parent.right) {
+                        parentOfCurrent = parentOfCurrent.parent;
+                        break;
+                    } else {
+                        parentOfCurrent = parentOfCurrent.parent;
+                    }
+                }
+                if (parentOfCurrent.end > current.end) {
+                    TextIndexer filler = new TextIndexer(Element.TEXT, current.end, parentOfCurrent.end);
+                    current.left = filler;
+                    filler.parent = current;
+                }
+                current = parentOfCurrent;
+                if (current == root) {
+                    break;
+                }
+            }
         }
-        System.out.println("Done");
+        return root;
+    }
+
+    private Element buildElementTree(TextIndexer ti) {
+        if (ti == null) {
+            return null;
+        }
+
+        Text t = new Text();
+        t.append(this.text.substring(ti.start, ti.end));
+        t.setType(ti.type);
+        t.setRight(buildElementTree(ti.right));
+        t.setLeft(buildElementTree(ti.left));
+        return t;
+    }
+
+    public Element analyze() {
+        TextIndexer reactTree = this.analyzeElementsTypes();
+        return buildElementTree(reactTree);
     }
 
     private static String generateString(int length) {

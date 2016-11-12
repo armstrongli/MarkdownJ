@@ -1,7 +1,6 @@
 package com.fragmentime.markdownj.parser;
 
 import com.fragmentime.markdownj.elements.Element;
-import com.fragmentime.markdownj.elements.Root;
 import com.fragmentime.markdownj.elements.block.Block;
 import com.fragmentime.markdownj.elements.header.Header;
 import com.fragmentime.markdownj.elements.list.Li;
@@ -24,7 +23,7 @@ public class Parser {
 
     public static String parse(String fileName) throws Exception {
         BufferedReader br = null;
-        Root root = new Root();
+        Element root = new Element();
         try {
             br = new BufferedReader(new FileReader(new File(fileName)));
             while (true) {

@@ -2,6 +2,7 @@ package com.fragmentime.markdownj.elements.text;
 
 import com.fragmentime.markdownj.elements.Element;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -108,6 +109,22 @@ public class Text extends Element {
 
     @Override
     public String render() {
+        if (TEXT_BLOCK.equals(this.getType())) {
+            return renderBlock();
+        }
+        if (TEXT_IMAGE.equals(this.getType())) {
+            return renderImage();
+        }
+        if (TEXT_LINK.equals(this.getType())) {
+            return renderLink();
+        }
+        if (TEXT_ITALIC.equals(this.getType())) {
+            return renderItalic();
+        }
+        if (TEXT_BOLD.equals(this.getType())) {
+            return renderBold();
+        }
+
         StringBuilder sb = new StringBuilder("");
         if (this.hasRight()) {
             sb.append(this.getRight().render());
@@ -116,6 +133,85 @@ public class Text extends Element {
                 sb.append(item).append(" ");
             }
         }
+        sb.append("\n");
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
+
+    private String renderBlock() {
+        StringBuilder sb = new StringBuilder("");
+        sb.append("<span class=\"block\">");
+        sb.append(this.getData().get(0));
+        sb.append("</span>");
+
+        sb.append("\n");
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
+
+    private String renderImage() {
+        StringBuilder sb = new StringBuilder("");
+        String data = this.getData().get(0).trim();
+        int altLeft = data.indexOf("[") + 1, altRight = data.indexOf("]"), srcLeft = data.indexOf("(") + 1, srcRight = data.indexOf(")");
+        String src = data.substring(srcLeft, srcRight).replace("\"", "");
+        sb.append("<image alt=\"").append(data.substring(altLeft, altRight).replace("\"", "")).append("\" ")
+                .append("src=\"").append(src).append("\"/>");
+        sb.append("\n");
+
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
+
+    private String renderLink() {
+        StringBuilder sb = new StringBuilder("");
+        String data = this.getData().get(0).trim();
+        int txtLeft = data.indexOf("[") + 1, txtRight = data.indexOf("]"), srcLeft = data.indexOf("(") + 1, srcRight = data.indexOf(")");
+        String src = data.substring(srcLeft, srcRight).replace("\"", "");
+        sb.append("<a ").append("href=\"").append(src).append("\">");
+        // TODO the text of link can be render again cause it can include other elements
+        sb.append(data.substring(txtLeft, txtRight));
+        sb.append("</a>");
+        sb.append("\n");
+
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
+
+    private String renderItalic() {
+        StringBuilder sb = new StringBuilder("");
+        sb.append("<i>");
+        if (this.hasRight()) {
+            sb.append(this.getRight().render());
+        } else {
+            sb.append(this.getData().get(0));
+        }
+        sb.append("</i>");
+
+        sb.append("\n");
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
+        return sb.toString();
+    }
+
+    private String renderBold() {
+        StringBuilder sb = new StringBuilder("");
+        sb.append("<b>");
+        if (this.hasRight()) {
+            sb.append(this.getRight().render());
+        } else {
+            sb.append(this.getData().get(0));
+        }
+        sb.append("</b>");
+
         sb.append("\n");
         if (this.hasLeft()) {
             sb.append(this.getLeft().render());
