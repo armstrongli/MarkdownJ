@@ -129,9 +129,11 @@ public class Text extends Element {
         if (this.hasRight()) {
             sb.append(this.getRight().render());
         } else {
+            StringBuilder mediaTxt = new StringBuilder("");
             for (String item : this.getData()) {
-                sb.append(item).append(" ");
+                mediaTxt.append(item).append(" ");
             }
+            sb.append(mediaTxt);
         }
         sb.append("\n");
         if (this.hasLeft()) {
@@ -142,8 +144,12 @@ public class Text extends Element {
 
     private String renderBlock() {
         StringBuilder sb = new StringBuilder("");
-        sb.append("<span class=\"block\">");
-        sb.append(this.getData().get(0));
+        sb.append("<span class=\"block\" style=\"background-color: #dbdbdb;border-radius: 5px;padding: 0px 5px 0px 5px;\">");
+        StringBuilder mediaTxt = new StringBuilder();
+        for (String item : this.getData()) {
+            mediaTxt.append(item).append(" ");
+        }
+        sb.append(mediaTxt.substring(1, mediaTxt.length() - 2));
         sb.append("</span>");
 
         sb.append("\n");
@@ -191,7 +197,11 @@ public class Text extends Element {
         if (this.hasRight()) {
             sb.append(this.getRight().render());
         } else {
-            sb.append(this.getData().get(0));
+            StringBuilder mediaTxt = new StringBuilder("");
+            for (String item : this.getData()) {
+                mediaTxt.append(item).append(" ");
+            }
+            sb.append(mediaTxt.substring(1, mediaTxt.length() - 2));
         }
         sb.append("</i>");
 
@@ -208,7 +218,11 @@ public class Text extends Element {
         if (this.hasRight()) {
             sb.append(this.getRight().render());
         } else {
-            sb.append(this.getData().get(0));
+            StringBuilder mediaTxt = new StringBuilder("");
+            for (String item : this.getData()) {
+                mediaTxt.append(item).append(" ");
+            }
+            sb.append(mediaTxt.substring(2, mediaTxt.length() - 3));
         }
         sb.append("</b>");
 

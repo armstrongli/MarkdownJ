@@ -1,27 +1,25 @@
-package com.fragmentime.markdownj.elements.list;
+package com.fragmentime.markdownj.elements.table;
 
 import com.fragmentime.markdownj.elements.Element;
 
 /**
- * Created by Beancan on 2016/10/28.
+ * Created by Beancan on 2016/11/13.
  */
-public class Li extends Element {
-
-    public Li() {
-        setType(Element.LI);
+public class TableCell extends Element {
+    public TableCell() {
+        setType(Element.TABLE_CELL);
     }
 
     @Override
     public String render() {
         StringBuilder sb = new StringBuilder();
-        sb.append("<li>");
+        sb.append("<td>");
         if (this.hasRight()) {
             sb.append(this.getRight().render());
         } else {
-            String data = this.getData().get(0).trim();
-            sb.append(data);
+            sb.append(this.getData().get(0));
         }
-        sb.append("</li>").append("\n");
+        sb.append("</td>");
         if (this.hasLeft()) {
             sb.append(this.getLeft().render());
         }

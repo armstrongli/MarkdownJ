@@ -11,7 +11,7 @@ public class List extends Element {
     }
 
     public static boolean isList(String content) {
-        return content != null && content.trim().startsWith("- ");
+        return content != null && content.trim().matches("^((\\-|\\d+\\.) +.+)$");
     }
 
     public static int indexOfList(String content) {
@@ -32,6 +32,10 @@ public class List extends Element {
         sb.append(ol ? "<ol>" : "<ul>").append("\n");
         sb.append(this.getRight().render());
         sb.append(ol ? "</ol>" : "</ul>").append("\n");
+
+        if (this.hasLeft()) {
+            sb.append(this.getLeft().render());
+        }
         return sb.toString();
     }
 }

@@ -7,7 +7,7 @@ import com.fragmentime.markdownj.parser.Parser;
  */
 public class MarkdownJ {
     public static void main(String[] args) throws Throwable {
-        table();
+        sample();
     }
 
     private static void sample() throws Throwable {

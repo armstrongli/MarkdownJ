@@ -28,9 +28,13 @@ public class TextAnalyser {
         public int compareTo(TextIndexer o) {
             return this.start - o.start;
         }
+
+        @Override
+        public String toString() {
+            return type + ": " + start + "-" + end;
+        }
     }
 
-    private Stack<TextIndexer> stack = new Stack<TextIndexer>();
     private List<TextIndexer> indexers = new ArrayList<TextIndexer>();
 
     private String text;
@@ -59,10 +63,16 @@ public class TextAnalyser {
         for (TextIndexer item : this.indexers) {
             if (item.start < current.end) {
                 if (item.start > current.start) {
-                    TextIndexer ti = new TextIndexer(Element.TEXT, current.start, item.start);
-                    current.right = ti;
-                    ti.parent = current;
-                    current = ti;
+                    int fillerStart = current.start;
+                    if (Text.TEXT_BOLD.equals(current.type)) {
+                        fillerStart += 2;
+                    } else if (Text.TEXT_ITALIC.equals(current.type)) {
+                        fillerStart += 1;
+                    }
+                    TextIndexer filler = new TextIndexer(Element.TEXT, fillerStart, item.start);
+                    current.right = filler;
+                    filler.parent = current;
+                    current = filler;
                 }
                 if (current.parent != null && current == current.parent.right) {
                     current.left = item;
@@ -96,7 +106,13 @@ public class TextAnalyser {
                         break;
                     } else {
                         if (parentOfCurrent.end > current.end) {
-                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, parentOfCurrent.end);
+                            int fillerEnd = parentOfCurrent.end;
+                            if (Text.TEXT_BOLD.equals(current.type)) {
+                                fillerEnd -= 2;
+                            } else if (Text.TEXT_ITALIC.equals(current.type)) {
+                                fillerEnd -= 1;
+                            }
+                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, fillerEnd);
                             current.left = filler;
                             filler.parent = current;
                         }
@@ -117,7 +133,13 @@ public class TextAnalyser {
                     }
                 }
                 if (parentOfCurrent.end > current.end) {
-                    TextIndexer filler = new TextIndexer(Element.TEXT, current.end, parentOfCurrent.end);
+                    int fillerEnd = parentOfCurrent.end;
+                    if (Text.TEXT_BOLD.equals(current.type)) {
+                        fillerEnd -= 2;
+                    } else if (Text.TEXT_ITALIC.equals(current.type)) {
+                        fillerEnd -= 1;
+                    }
+                    TextIndexer filler = new TextIndexer(Element.TEXT, current.end, fillerEnd);
                     current.left = filler;
                     filler.parent = current;
                 }
@@ -138,6 +160,7 @@ public class TextAnalyser {
         Text t = new Text();
         t.append(this.text.substring(ti.start, ti.end));
         t.setType(ti.type);
+
         t.setRight(buildElementTree(ti.right));
         t.setLeft(buildElementTree(ti.left));
         return t;

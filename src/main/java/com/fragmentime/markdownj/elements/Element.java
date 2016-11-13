@@ -15,7 +15,9 @@ public class Element {
     public static final String TABLE = "table";
     public static final String TEXT = "text";
     public static final String LI = "li";
-    public static final String KEY = "key";
+    public static final String TABLE_HEAD = "head";
+    public static final String TABLE_ROW = "row";
+    public static final String TABLE_CELL = "cell";
 
     private List<String> data = new ArrayList<String>();
     private Element parent;
@@ -88,4 +90,5 @@ public class Element {
         }
         return sb.toString();
     }
+
 }
