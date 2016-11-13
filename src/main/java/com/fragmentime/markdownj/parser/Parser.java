@@ -163,6 +163,10 @@ public class Parser {
                         e = new Block();
                     } else if (Header.isHeader(item)) {
                         e = new Header();
+                        Element filler = new Text();
+                        filler.append(item.replaceFirst("#+", ""));
+                        filler.setParent(e);
+                        e.setRight(filler);
                     } else if (List.isList(item)) {
                         e = new List();
                     } else if (Separator.isSeparator(item)) {
@@ -246,12 +250,15 @@ public class Parser {
                         e = new Block();
                     } else if (Header.isHeader(item)) {
                         e = new Header();
+                        Element filler = new Text();
+                        filler.append(item.replaceFirst("#+", ""));
+                        filler.setParent(e);
+                        e.setRight(filler);
                     } else if (List.isList(item)) {
                         e = new List();
                     } else if (Separator.isSeparator(item)) {
                         e = new Separator();
                     } else {
-
                         String itemP1 = element.getData().get(index + 1 == element.getData().size() ? index : index + 1);
                         if (item != itemP1 && Table.isTable(item, itemP1)) {
                             e = new Table();
