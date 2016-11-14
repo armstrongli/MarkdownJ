@@ -14,6 +14,7 @@ import com.fragmentime.markdownj.logger.Log;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,35 +23,72 @@ import java.util.Arrays;
  */
 public class Parser {
 
-    public static String parse(String fileName) throws Exception {
+    public static String parseFile(File file) throws Exception {
+        if (file == null) {
+            return "";
+        }
+
         BufferedReader br = null;
-        Element root = new Element();
+        java.util.List<String> content = new ArrayList<String>();
         try {
-            br = new BufferedReader(new FileReader(new File(fileName)));
+            br = new BufferedReader(new FileReader(file));
             while (true) {
                 String tmp = br.readLine();
                 if (tmp == null) {
                     break;
                 }
-                root.append(tmp);
+                content.add(tmp);
             }
         } finally {
             if (br != null) {
                 br.close();
             }
         }
-        analyze(root);
-        analyzeList(root);
-        analyzeText(root);
-        analyzeTable(root);
+        return parseContent(content);
+    }
 
-        java.util.List<String> result = iterator(root);
-        for (String item : result) {
-//            Log.log(item);
+    public static String parseString(String mdString) throws Exception {
+        BufferedReader br = null;
+        java.util.List<String> content = new ArrayList<String>();
+        try {
+            br = new BufferedReader(new StringReader(mdString));
+            while (true) {
+                String tmp = br.readLine();
+                if (tmp == null) {
+                    break;
+                }
+                content.add(tmp);
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
         }
+        return parseContent(content);
+    }
 
-        System.out.println(root.render());
-        return null;
+    private static String parseContent(java.util.List<String> content) throws Exception {
+        if (content == null || content.size() == 0) {
+            return "";
+        }
+        Element root = new Element();
+        for (String item : content) {
+            root.append(item);
+        }
+        analyzeElementTree(root);
+        return root.render();
+    }
+
+    public static String parseFile(String fileName) throws Exception {
+        return parseFile(new File(fileName));
+    }
+
+    private static Element analyzeElementTree(Element elementTree) {
+        analyze(elementTree);
+        analyzeList(elementTree);
+        analyzeText(elementTree);
+        analyzeTable(elementTree);
+        return elementTree;
     }
 
     private static void analyzeTable(Element element) {
