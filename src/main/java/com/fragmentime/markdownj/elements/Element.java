@@ -18,6 +18,7 @@ public class Element {
     public static final String TABLE_HEAD = "head";
     public static final String TABLE_ROW = "row";
     public static final String TABLE_CELL = "cell";
+    public static final String DICTIONARY = "dictionary";
 
     private List<String> data = new ArrayList<String>();
     private Element parent;

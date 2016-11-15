@@ -18,7 +18,7 @@ public class Text extends Element {
     }
 
     public static final String REGEX_IMAGE = "!\\s{0,}\\[[^\\]]{0,}\\]\\s{0,}\\([^\\)]{0,}\\)";
-    public static final String REGEX_LINK = "\\[[^\\]]{0,}\\]\\s{0,}\\([^\\)]{0,}\\)";
+    public static final String REGEX_LINK = "\\[[^\\]]{0,}\\]\\s{0,}(\\([^\\)]{0,}\\)|\\[[^\\]]{0,}\\])";
     public static final String REGEX_BLOCK = "`[^`]{1,}`";
     public static final String REGEX_BOLD = "(\\*\\*|__)(?=\\S)(.+?[*_]*)(?<=\\S)\\1";
     public static final String REGEX_ITALIC = "(\\*|_)(?=\\S)(.+?)(?<=\\S)\\1";
@@ -177,7 +177,12 @@ public class Text extends Element {
     private String renderLink() {
         StringBuilder sb = new StringBuilder("");
         String data = this.getData().get(0).trim();
-        int txtLeft = data.indexOf("[") + 1, txtRight = data.indexOf("]"), srcLeft = data.indexOf("(") + 1, srcRight = data.indexOf(")");
+        int txtLeft = data.indexOf("[") + 1, txtRight = data.indexOf("]");
+        int srcLeft = data.indexOf("(", txtRight) + 1, srcRight = data.indexOf(")", txtRight);
+        if (srcLeft == 0) {
+            srcLeft = data.indexOf("[", txtRight) + 1;
+            srcRight = data.indexOf("]", srcLeft);
+        }
         String src = data.substring(srcLeft, srcRight).replace("\"", "");
         sb.append("<a ").append("href=\"").append(src).append("\">");
         // TODO the text of link can be render again cause it can include other elements

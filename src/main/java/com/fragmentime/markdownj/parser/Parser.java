@@ -2,6 +2,7 @@ package com.fragmentime.markdownj.parser;
 
 import com.fragmentime.markdownj.elements.Element;
 import com.fragmentime.markdownj.elements.block.Block;
+import com.fragmentime.markdownj.elements.dict.Dictionary;
 import com.fragmentime.markdownj.elements.header.Header;
 import com.fragmentime.markdownj.elements.list.Li;
 import com.fragmentime.markdownj.elements.list.List;
@@ -86,8 +87,8 @@ public class Parser {
     private static Element analyzeElementTree(Element elementTree) {
         analyze(elementTree);
         analyzeList(elementTree);
-        analyzeText(elementTree);
         analyzeTable(elementTree);
+        analyzeText(elementTree);
         return elementTree;
     }
 
@@ -103,7 +104,10 @@ public class Parser {
 
             Element current = null, stake = null;
             for (int i = 1; i < columns; i++) {
-                String data = (i > cells.length - 1) ? "&nbsp;" : cells[i];
+                String data = (i > cells.length - 1) ? "&nbsp;" : cells[i].trim();
+                if (data.endsWith("|")) {
+                    data = data.substring(0, data.length() - 1);
+                }
                 TableCell cell = new TableCell();
                 cell.append(data);
                 if (current == null) {
@@ -120,7 +124,10 @@ public class Parser {
                 current = stake = null;
                 cells = row.getData().get(0).split("\\|", columns);
                 for (int i = 1; i < columns; i++) {
-                    String data = (i > cells.length - 1) ? "&nbsp;" : cells[i];
+                    String data = (i > cells.length - 1) ? "&nbsp;" : cells[i].trim();
+                    if (data.endsWith("|")) {
+                        data = data.substring(0, data.length() - 1);
+                    }
                     TableCell cell = new TableCell();
                     cell.append(data);
                     if (current == null) {
@@ -205,6 +212,8 @@ public class Parser {
                         filler.append(item.replaceFirst("#+", ""));
                         filler.setParent(e);
                         e.setRight(filler);
+                    } else if (Dictionary.isDictionary(item)) {
+                        e = new Dictionary();
                     } else if (List.isList(item)) {
                         e = new List();
                     } else if (Separator.isSeparator(item)) {
@@ -292,6 +301,8 @@ public class Parser {
                         filler.append(item.replaceFirst("#+", ""));
                         filler.setParent(e);
                         e.setRight(filler);
+                    } else if (Dictionary.isDictionary(item)) {
+                        e = new Dictionary();
                     } else if (List.isList(item)) {
                         e = new List();
                     } else if (Separator.isSeparator(item)) {

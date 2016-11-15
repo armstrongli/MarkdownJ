@@ -14,7 +14,7 @@ public class Table extends Element {
     public static boolean isTable(String content, String content2) {
         return content != null && content.trim().startsWith("|")
                 &&
-                content2 != null && content2.trim().matches("(\\|([ ]+)?[:]?[\\-]+[:]?([ ]+)?)+");
+                content2 != null && content2.trim().replace('|', ' ').replace('-', ' ').replace(':', ' ').trim().length() == 0;
     }
 
     public static boolean isTableItem(String content) {
