@@ -11,7 +11,7 @@ public class List extends Element {
     }
 
     public static boolean isList(String content) {
-        return content != null && content.trim().matches("^((\\-|\\d+\\.) +.+)$");
+        return content != null && content.trim().matches("^((\\-|\\d+\\.|\\+\\*) +.+)$");
     }
 
     public static int indexOfList(String content) {

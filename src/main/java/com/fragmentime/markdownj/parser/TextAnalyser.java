@@ -85,6 +85,9 @@ public class TextAnalyser {
             } else {
                 while (true) {
                     TextIndexer parentOfCurrent = current;
+                    if (current == root) {
+                        break;
+                    }
                     while (true) {
                         if (parentOfCurrent == parentOfCurrent.parent.right) {
                             parentOfCurrent = parentOfCurrent.parent;
@@ -105,7 +108,7 @@ public class TextAnalyser {
                         current = item;
                         break;
                     } else {
-                        if (parentOfCurrent.end > current.end) {
+                        if (parentOfCurrent.end >= current.end) {
                             int fillerEnd = parentOfCurrent.end;
                             if (Text.TEXT_BOLD.equals(current.type)) {
                                 fillerEnd -= 2;

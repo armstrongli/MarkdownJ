@@ -18,7 +18,7 @@ public class Text extends Element {
     }
 
     public static final String REGEX_IMAGE = "!\\s{0,}\\[[^\\]]{0,}\\]\\s{0,}\\([^\\)]{0,}\\)";
-    public static final String REGEX_LINK = "\\[[^\\]]{0,}\\]\\s{0,}(\\([^\\)]{0,}\\)|\\[[^\\]]{0,}\\])";
+    public static final String REGEX_LINK = "\\[[^\\]]{0,}\\]\\s{0,}(\\([^\\)]{0,}\\))";
     public static final String REGEX_BLOCK = "`[^`]{1,}`";
     public static final String REGEX_BOLD = "(\\*\\*|__)(?=\\S)(.+?[*_]*)(?<=\\S)\\1";
     public static final String REGEX_ITALIC = "(\\*|_)(?=\\S)(.+?)(?<=\\S)\\1";
