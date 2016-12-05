@@ -1,4 +1,4 @@
-package com.fragmentime.markdownj.parser;
+package com.fragmentime.markdownj.analyzer;
 
 import com.fragmentime.markdownj.elements.Element;
 import com.fragmentime.markdownj.elements.text.Text;
@@ -9,7 +9,33 @@ import java.util.*;
 /**
  * Created by Beancan on 2016/11/2.
  */
-public class TextAnalyser {
+public class TextAnalyser extends Analyzer {
+
+    public boolean belongsToAnalyzer(Element element) {
+        return true;
+    }
+
+    protected int getWeight() {
+        return ANALYZER_TEXT;
+    }
+
+    public void analyze(Element root) {
+        if (root == null || root.getData().size() == 0) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> it = root.getData().iterator();
+        while (it.hasNext()) {
+            sb.append(it.next());
+            if (it.hasNext()) {
+                sb.append(" ");
+            }
+        }
+        Element e = new TextAnalyser(sb.toString()).analyze();
+        root.setRight(e);
+        e.setParent(root);
+    }
+
     private static class TextIndexer implements Comparable<TextIndexer> {
         private TextIndexer parent;
         private TextIndexer left;
@@ -41,6 +67,14 @@ public class TextAnalyser {
 
     public TextAnalyser(String text) {
         this.text = text;
+    }
+
+
+    public TextAnalyser() {
+    }
+
+    public Element analyze(String text) {
+        return null;
     }
 
     private TextIndexer analyzeElementsTypes() {

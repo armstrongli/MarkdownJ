@@ -1,5 +1,6 @@
 package com.fragmentime.markdownj.parser;
 
+import com.fragmentime.markdownj.analyzer.*;
 import com.fragmentime.markdownj.elements.Element;
 import com.fragmentime.markdownj.elements.block.Block;
 import com.fragmentime.markdownj.elements.dict.Dictionary;
@@ -18,6 +19,7 @@ import java.io.FileReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Created by Beancan on 2016/10/26.
@@ -45,7 +47,7 @@ public class Parser {
                 br.close();
             }
         }
-        return parseContent(content);
+        return analyzeContent(content);
     }
 
     public static String parseString(String mdString) throws Exception {
@@ -65,10 +67,11 @@ public class Parser {
                 br.close();
             }
         }
-        return parseContent(content);
+        return analyzeContent(content);
     }
 
-    private static String parseContent(java.util.List<String> content) throws Exception {
+
+    private static String analyzeContent(java.util.List<String> content) throws Exception {
         if (content == null || content.size() == 0) {
             return "";
         }
@@ -76,7 +79,13 @@ public class Parser {
         for (String item : content) {
             root.append(item);
         }
+
+        getParser().analyzeContent(root);
+
         analyzeElementTree(root);
+
+
+
         return root.render();
     }
 
@@ -440,4 +449,57 @@ public class Parser {
 
         return result;
     }
+
+    private void analyzeContent(Element root) {
+        for (Analyzer analyzerItem : this.analyzers) {
+            analyzeContent(root, analyzerItem);
+        }
+    }
+
+    private void analyzeContent(Element root, Analyzer analyzer) {
+        if (root == null || analyzer == null) {
+            return;
+        }
+        if (root.getData().size() == 0) {
+            return;
+        }
+        analyzer.analyze(root);
+        if (!root.hasRight()) {
+            return;
+        }
+        Element current = root.getRight();
+        while (current != null) {
+            if (analyzer.belongsToAnalyzer(current)) {
+                for (Analyzer subAnalyzerItem : analyzer.getSubAnalyzers()) {
+                    analyzeContent(current, subAnalyzerItem);
+                }
+            }
+            current = current.getLeft();
+        }
+    }
+
+    private static Parser getParser() {
+        Parser parser = new Parser();
+        parser.init();
+        return parser;
+    }
+
+    private void init() {
+        this.registerAnalyzer(new TextAnalyser());
+        this.registerAnalyzer(new CodeBlockAnalyzer());
+        this.registerAnalyzer(new DictionaryAnalyzer());
+        this.registerAnalyzer(new HeaderAnalyzer().addSubAnalyzers(new TextAnalyser()));
+        this.registerAnalyzer(new ListAnalyzer().addSubAnalyzers(new TextAnalyser()));
+        this.registerAnalyzer(new TableAnalyzer().addSubAnalyzers(new TextAnalyser()));
+    }
+
+    private void registerAnalyzer(Analyzer analyzer) {
+        if (analyzer == null) {
+            throw new NullPointerException("Analyzer can't be null when registering new one");
+        }
+        this.analyzers.add(analyzer);
+        Collections.sort(this.analyzers);
+    }
+
+    private java.util.List<Analyzer> analyzers = new ArrayList<Analyzer>();
 }

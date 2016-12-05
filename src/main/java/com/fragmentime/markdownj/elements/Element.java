@@ -92,4 +92,8 @@ public class Element {
         return sb.toString();
     }
 
+    public String getSourceType() {
+        return parent.getSourceType();
+    }
+
 }
