@@ -65,8 +65,10 @@ public class HeaderAnalyzer extends Analyzer {
                 current = e;
             } else {
                 if (belongsToAnalyzer(current)) {
-                    e = new Element();
-                    e.append(item);
+                    if (e == null) {
+                        e = new Element();
+                        e.append(item);
+                    }
 
                     e.setParent(current);
                     current.setLeft(e);

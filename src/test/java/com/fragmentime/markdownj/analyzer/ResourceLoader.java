@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 public class ResourceLoader {
     static final Element LoadResourceFromClass(Class c, String resource) throws IOException {
         Element e = new Element();
-        try (InputStream is = c.getResourceAsStream("/test-block.md");
+        try (InputStream is = c.getResourceAsStream(resource);
              InputStreamReader isr = new InputStreamReader(is);
              BufferedReader br = new BufferedReader(isr);) {
             String tmp = null;

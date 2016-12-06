@@ -1,1 +1,1 @@
-[A] [bbbbb]
+[A]: [bbbbb]
