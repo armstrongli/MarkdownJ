@@ -1,7 +1,7 @@
 package com.fragmentime.markdownj.analyzer;
 
 import com.fragmentime.markdownj.elements.Element;
-import com.fragmentime.markdownj.elements.table.Table;
+import com.fragmentime.markdownj.elements.table.*;
 
 import java.util.List;
 
@@ -38,10 +38,37 @@ public class TableAnalyzer extends Analyzer {
                 e = new Table();
                 tableCount++;
                 e.append(item).append(itemPlus);
+                TableHead head = new TableHead();
+                head.append(item);
+
+                head.setParent(e);
+                e.setRight(head);
+
+                TableColumnDefine tableColumnDefine = new TableColumnDefine();
+                tableColumnDefine.append(itemPlus);
+
+                head.setLeft(tableColumnDefine);
+
+                Element tableRowItem = null;
                 for (j = j + 1; j < data.size(); j++) {
                     String tableItem = data.get(j);
                     if (item.trim().length() > 0) {
                         e.append(tableItem);
+
+                        if (tableRowItem == null) {
+                            tableRowItem = new TableRow();
+                            tableRowItem.append(tableItem);
+
+                            tableRowItem.setParent(tableColumnDefine);
+                            tableColumnDefine.setLeft(tableRowItem);
+                        } else {
+                            TableRow tmpTableRow = new TableRow();
+                            tmpTableRow.append(tableItem);
+
+                            tableRowItem.setLeft(tmpTableRow);
+                            tmpTableRow.setParent(tableRowItem);
+                            tableRowItem = tmpTableRow;
+                        }
                     } else {
                         i = j - 1;
                         break;
@@ -71,6 +98,66 @@ public class TableAnalyzer extends Analyzer {
             root.getRight().setParent(null);
             root.setRight(null);
         }
+        current = root.getRight();
+        while (current != null) {
+            if (this.belongsToAnalyzer(current)) {
+                analyzeTable(current);
+            }
+            current = current.getLeft();
+        }
         return tableCount > 0;
+    }
+
+
+    private static void analyzeTable(Element element) {
+        if (element == null) {
+            return;
+        }
+        if (element instanceof Table) {
+            Element header = element.getRight();
+            Element rowDefinition = header.getLeft();
+            int columns = rowDefinition.getData().get(0).split("\\|").length;
+            String[] cells = header.getData().get(0).split("\\|", columns);
+
+            Element current = null, stake = null;
+            for (int i = 1; i < columns; i++) {
+                String data = (i > cells.length - 1) ? "&nbsp;" : cells[i].trim();
+                if (data.endsWith("|")) {
+                    data = data.substring(0, data.length() - 1);
+                }
+                TableCell cell = new TableCell();
+                cell.append(data);
+                if (current == null) {
+                    stake = current = cell;
+                } else {
+                    cell.setParent(current);
+                    current.setLeft(cell);
+                    current = cell;
+                }
+            }
+            header.setRight(stake);
+            Element row = rowDefinition.getLeft();
+            while (row != null) {
+                current = stake = null;
+                cells = row.getData().get(0).split("\\|", columns);
+                for (int i = 1; i < columns; i++) {
+                    String data = (i > cells.length - 1) ? "&nbsp;" : cells[i].trim();
+                    if (data.endsWith("|")) {
+                        data = data.substring(0, data.length() - 1);
+                    }
+                    TableCell cell = new TableCell();
+                    cell.append(data);
+                    if (current == null) {
+                        stake = current = cell;
+                    } else {
+                        cell.setParent(current);
+                        current.setLeft(cell);
+                        current = cell;
+                    }
+                }
+                row.setRight(stake);
+                row = row.getLeft();
+            }
+        }
     }
 }
