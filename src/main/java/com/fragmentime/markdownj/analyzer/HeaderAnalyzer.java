@@ -31,10 +31,10 @@ public class HeaderAnalyzer extends Analyzer {
         return 0;
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         int headerCount = 0;
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
         List<String> data = root.getData();
         int i, j;
@@ -88,5 +88,6 @@ public class HeaderAnalyzer extends Analyzer {
             root.getRight().setParent(null);
             root.setRight(null);
         }
+        return headerCount > 0;
     }
 }

@@ -19,9 +19,9 @@ public class TextAnalyser extends Analyzer {
         return ANALYZER_TEXT;
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
         StringBuilder sb = new StringBuilder();
         Iterator<String> it = root.getData().iterator();
@@ -34,6 +34,7 @@ public class TextAnalyser extends Analyzer {
         Element e = new TextAnalyser(sb.toString()).analyze();
         root.setRight(e);
         e.setParent(root);
+        return false;
     }
 
     private static class TextIndexer implements Comparable<TextIndexer> {

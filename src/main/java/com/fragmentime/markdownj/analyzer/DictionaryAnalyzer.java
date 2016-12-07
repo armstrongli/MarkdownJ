@@ -21,11 +21,12 @@ public class DictionaryAnalyzer extends Analyzer {
         return Dictionary.isDictionary(text);
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
         Element current = null;
+        int dictionaryCount = 0;
         Iterator<String> it = root.getData().iterator();
         while (it.hasNext()) {
             String item = it.next();
@@ -33,6 +34,7 @@ public class DictionaryAnalyzer extends Analyzer {
                 Element e = null;
                 if (isDictionary(item)) {
                     e = new Dictionary();
+                    dictionaryCount++;
                 } else {
                     e = new Element();
                 }
@@ -44,6 +46,8 @@ public class DictionaryAnalyzer extends Analyzer {
                 if (isDictionary(item)) {
                     Element e = new Dictionary();
                     e.append(item);
+                    dictionaryCount++;
+
                     current.setLeft(e);
                     e.setParent(current);
                     current = e;
@@ -60,5 +64,10 @@ public class DictionaryAnalyzer extends Analyzer {
                 }
             }
         }
+        if (dictionaryCount == 0) {
+            root.getRight().setParent(null);
+            root.setRight(null);
+        }
+        return dictionaryCount > 0;
     }
 }

@@ -15,6 +15,7 @@ public abstract class Analyzer implements Comparable<Analyzer> {
     public static final int ANALYZER_DICT = 4000;
     public static final int ANALYZER_HEADER = 3000;
     public static final int ANALYZER_LIST = 2500;
+    public static final int ANALYZER_LI = 2499;
     public static final int ANALYZER_SEPARATOR = 2000;
     public static final int ANALYZER_TABLE = 1000;
     public static final int ANALYZER_TEXT = 0;
@@ -37,7 +38,7 @@ public abstract class Analyzer implements Comparable<Analyzer> {
     /**
      * @param root
      */
-    public abstract void analyze(Element root);
+    public abstract boolean analyze(Element root);
 
     public final Analyzer addSubAnalyzers(Analyzer... analyzers) {
         this.analyzers.addAll(Arrays.asList(analyzers));

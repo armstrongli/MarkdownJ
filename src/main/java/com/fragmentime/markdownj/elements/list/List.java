@@ -30,7 +30,9 @@ public class List extends Element {
         }
         StringBuilder sb = new StringBuilder();
         sb.append(ol ? "<ol>" : "<ul>").append("\n");
-        sb.append(this.getRight().render());
+        if (this.hasRight()) {
+            sb.append(this.getRight().render());
+        }
         sb.append(ol ? "</ol>" : "</ul>").append("\n");
 
         if (this.hasLeft()) {

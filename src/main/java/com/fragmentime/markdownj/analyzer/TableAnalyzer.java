@@ -21,9 +21,9 @@ public class TableAnalyzer extends Analyzer {
         return Table.isTable(header, definition);
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
         int tableCount = 0;
         int i, j;
@@ -71,5 +71,6 @@ public class TableAnalyzer extends Analyzer {
             root.getRight().setParent(null);
             root.setRight(null);
         }
+        return tableCount > 0;
     }
 }

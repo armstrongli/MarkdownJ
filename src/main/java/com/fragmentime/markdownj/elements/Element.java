@@ -1,6 +1,7 @@
 package com.fragmentime.markdownj.elements;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -85,6 +86,14 @@ public class Element {
         StringBuffer sb = new StringBuffer();
         if (this.hasRight()) {
             sb.append(this.getRight().render());
+        } else {
+            Iterator<String> items = getData().iterator();
+            while (items.hasNext()) {
+                sb.append(items.next());
+                if (items.hasNext()) {
+                    sb.append(" ");
+                }
+            }
         }
         if (this.hasLeft()) {
             sb.append(this.getLeft().render());

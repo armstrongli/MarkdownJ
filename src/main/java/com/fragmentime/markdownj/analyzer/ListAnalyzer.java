@@ -20,27 +20,27 @@ public class ListAnalyzer extends Analyzer {
         return List.isList(text);
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
         int i, listCount = 0;
         Element current = null;
         java.util.List<String> data = root.getData();
         for (i = 0; i < data.size(); i++) {
-
             String item = data.get(i);
             Element e;
             if (current == null) {
                 if (isList(item)) {
                     e = new List();
+                    e.append(item);
                     listCount++;
 
                     i = appendListItem(e, data, i + 1);
                 } else {
                     e = new Element();
+                    e.append(item);
                 }
-                e.append(item);
 
                 e.setParent(root);
                 root.setRight(e);
@@ -78,6 +78,7 @@ public class ListAnalyzer extends Analyzer {
             root.getRight().setParent(null);
             root.setRight(null);
         }
+        return listCount > 0;
     }
 
     private int appendListItem(Element list, java.util.List<String> data, int j) {

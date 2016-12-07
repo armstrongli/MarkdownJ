@@ -17,10 +17,11 @@ public class CodeBlockAnalyzer extends Analyzer {
         return ANALYZER_CODE_BLOCK;
     }
 
-    public void analyze(Element root) {
+    public boolean analyze(Element root) {
         if (root == null || root.getData().size() == 0) {
-            return;
+            return false;
         }
+        int codeBlockCount = 0;
         boolean isCodeBlock = false;
         Iterator<String> it = root.getData().iterator();
         Element current = null;
@@ -30,6 +31,7 @@ public class CodeBlockAnalyzer extends Analyzer {
                 if (Block.isBlock(tmp)) {
                     current = new Block();
                     isCodeBlock = true;
+                    codeBlockCount++;
                 } else {
                     current = new Element();
                     isCodeBlock = false;
@@ -50,6 +52,7 @@ public class CodeBlockAnalyzer extends Analyzer {
                     if (Block.isBlock(tmp)) {
                         Element e = new Block();
                         e.append(tmp);
+                        codeBlockCount++;
 
                         current.setLeft(e);
                         e.setParent(current);
@@ -71,5 +74,10 @@ public class CodeBlockAnalyzer extends Analyzer {
                 }
             }
         }
+        if (codeBlockCount == 0) {
+            root.getRight().setParent(null);
+            root.setRight(null);
+        }
+        return codeBlockCount > 0;
     }
 }
