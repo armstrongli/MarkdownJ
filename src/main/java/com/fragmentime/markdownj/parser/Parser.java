@@ -70,6 +70,9 @@ public class Parser {
         return analyzeContent(content);
     }
 
+    public static String parseStrings(java.util.List<String> mdStrings) throws Exception {
+        return analyzeContent(mdStrings);
+    }
 
     private static String analyzeContent(java.util.List<String> content) throws Exception {
         if (content == null || content.size() == 0) {
@@ -83,7 +86,6 @@ public class Parser {
         getParser().analyzeContent(root);
 
         analyzeElementTree(root);
-
 
 
         return root.render();
@@ -463,22 +465,37 @@ public class Parser {
         if (root.getData().size() == 0) {
             return;
         }
-        analyzer.analyze(root);
-        if (!root.hasRight()) {
-            return;
-        }
-        Element current = root.getRight();
-        while (current != null) {
-            if (analyzer.belongsToAnalyzer(current)) {
-                for (Analyzer subAnalyzerItem : analyzer.getSubAnalyzers()) {
-                    analyzeContent(current, subAnalyzerItem);
-                }
+        if (root.hasRight()) {
+            analyzeContent(root.getRight(), analyzer);
+        } else {
+            if (root.isAcceptAnalyzed()) {
+//                analyzer.analyze(root);
+                iterateAnalyze(analyzer,root);
+                analyzeContent(root.getRight(), analyzer);
             }
-            current = current.getLeft();
         }
+        if (root.hasLeft()) {
+            analyzeContent(root.getLeft(), analyzer);
+        }
+//        analyzer.analyze(root);
+//        if (!root.hasRight()) {
+//            return;
+//        }
+//        Element current = root.getRight();
+//        while (current != null) {
+//            if (analyzer.belongsToAnalyzer(current)) {
+//                for (Analyzer subAnalyzerItem : analyzer.getSubAnalyzers()) {
+//                    analyzeContent(current, subAnalyzerItem);
+//                }
+//            }
+//            current = current.getLeft();
+//        }
     }
 
-    private static Parser getParser() {
+    private Parser() {
+    }
+
+    public static Parser getParser() {
         Parser parser = new Parser();
         parser.init();
         return parser;
@@ -488,9 +505,31 @@ public class Parser {
         this.registerAnalyzer(new TextAnalyser());
         this.registerAnalyzer(new CodeBlockAnalyzer());
         this.registerAnalyzer(new DictionaryAnalyzer());
-        this.registerAnalyzer(new HeaderAnalyzer().addSubAnalyzers(new TextAnalyser()));
-        this.registerAnalyzer(new ListAnalyzer().addSubAnalyzers(new TextAnalyser()));
-        this.registerAnalyzer(new TableAnalyzer().addSubAnalyzers(new TextAnalyser()));
+        this.registerAnalyzer(new HeaderAnalyzer());
+
+        ListAnalyzer listAnalyzer = new ListAnalyzer();
+        LiAnalyzer liAnalyzer = new LiAnalyzer();
+        listAnalyzer.addSubAnalyzers(liAnalyzer);
+        liAnalyzer.addSubAnalyzers(listAnalyzer);
+        this.registerAnalyzer(listAnalyzer);
+
+        this.registerAnalyzer(new TableAnalyzer());
+    }
+
+    private void iterateAnalyze(Analyzer analyzer, Element element) {
+        boolean analyzeResult = analyzer.analyze(element);
+        if (analyzeResult) {
+            Element current = element.getRight();
+            while (current != null) {
+                if (analyzer.belongsToAnalyzer(current)) {
+                    java.util.List<Analyzer> analyzers = analyzer.getSubAnalyzers();
+                    for (Analyzer item : analyzers) {
+                        iterateAnalyze(item, current);
+                    }
+                }
+                current = current.getLeft();
+            }
+        }
     }
 
     private void registerAnalyzer(Analyzer analyzer) {

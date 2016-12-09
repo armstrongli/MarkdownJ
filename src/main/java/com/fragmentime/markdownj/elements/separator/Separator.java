@@ -8,7 +8,8 @@ import com.fragmentime.markdownj.elements.Element;
 public class Separator extends Element {
 
     public Separator() {
-        super.setType(Element.SEPARATOR);
+        setType(Element.SEPARATOR);
+        setAcceptAnalyzed(false);
     }
 
     public static boolean isSeparator(String item) {

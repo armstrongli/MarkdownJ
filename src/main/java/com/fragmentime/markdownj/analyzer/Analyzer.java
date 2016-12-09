@@ -53,6 +53,6 @@ public abstract class Analyzer implements Comparable<Analyzer> {
     private List<Analyzer> analyzers = new ArrayList<Analyzer>();
 
     public final int compareTo(Analyzer o) {
-        return getWeight() - o.getWeight();
+        return o.getWeight() - getWeight();
     }
 }

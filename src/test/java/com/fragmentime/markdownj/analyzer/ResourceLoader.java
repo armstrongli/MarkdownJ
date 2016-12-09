@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
  * Created by Beancan on 2016/12/4.
  */
 public class ResourceLoader {
-    static final Element LoadResourceFromClass(Class c, String resource) throws IOException {
+    public static Element LoadResourceFromClass(Class c, String resource) throws IOException {
         Element e = new Element();
         try (InputStream is = c.getResourceAsStream(resource);
              InputStreamReader isr = new InputStreamReader(is);

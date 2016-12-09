@@ -8,6 +8,7 @@ import com.fragmentime.markdownj.elements.Element;
 public class Dictionary extends Element {
     public Dictionary() {
         setType(Element.DICTIONARY);
+        setAcceptAnalyzed(false);
     }
 
     public static boolean isDictionary(String txt) {

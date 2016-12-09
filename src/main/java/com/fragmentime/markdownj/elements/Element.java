@@ -26,6 +26,8 @@ public class Element {
     private Element left;
     private Element right;
 
+    private boolean acceptAnalyzed = true;
+
     public Element append(String item) {
         this.data.add(item);
         return this;
@@ -77,9 +79,16 @@ public class Element {
         return this.type;
     }
 
-
     public void setType(String type) {
         this.type = type;
+    }
+
+    public final boolean isAcceptAnalyzed() {
+        return acceptAnalyzed;
+    }
+
+    public final void setAcceptAnalyzed(boolean acceptAnalyzed) {
+        this.acceptAnalyzed = acceptAnalyzed;
     }
 
     public String render() {

@@ -9,6 +9,7 @@ public class Block extends Element {
 
     public Block() {
         super.setType(Element.BLOCK);
+        super.setAcceptAnalyzed(false);
     }
 
     public static boolean isBlock(String content) {

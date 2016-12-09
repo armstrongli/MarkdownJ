@@ -52,7 +52,7 @@ public class TableAnalyzer extends Analyzer {
                 Element tableRowItem = null;
                 for (j = j + 1; j < data.size(); j++) {
                     String tableItem = data.get(j);
-                    if (item.trim().length() > 0) {
+                    if (tableItem.trim().length() > 0) {
                         e.append(tableItem);
 
                         if (tableRowItem == null) {

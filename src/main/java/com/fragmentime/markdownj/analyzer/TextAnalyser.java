@@ -31,6 +31,10 @@ public class TextAnalyser extends Analyzer {
                 sb.append(" ");
             }
         }
+        String text = sb.toString();
+        if (text.trim().length() == 0) {
+            return false;
+        }
         Element e = new TextAnalyser(sb.toString()).analyze();
         root.setRight(e);
         e.setParent(root);
