@@ -186,7 +186,11 @@ public class Text extends Element {
         String src = data.substring(srcLeft, srcRight).replace("\"", "");
         sb.append("<a ").append("href=\"").append(src).append("\">");
         // TODO the text of link can be render again cause it can include other elements
-        sb.append(data.substring(txtLeft, txtRight));
+        if (this.hasRight()) {
+            sb.append(this.getRight().render());
+        } else {
+            sb.append(data.substring(txtLeft, txtRight));
+        }
         sb.append("</a>");
         sb.append("\n");
 

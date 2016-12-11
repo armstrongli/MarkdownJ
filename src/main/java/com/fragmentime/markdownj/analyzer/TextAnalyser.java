@@ -64,9 +64,19 @@ public class TextAnalyser extends Analyzer {
         public String toString() {
             return type + ": " + start + "-" + end;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof TextIndexer) {
+                TextIndexer b = (TextIndexer) obj;
+                return this.type.equals(b.type) && this.start == b.start && this.end == b.end;
+            } else {
+                return false;
+            }
+        }
     }
 
-    private List<TextIndexer> indexers = new ArrayList<TextIndexer>();
+    private List<TextIndexer> indexers = new ArrayList<>();
 
     private String text;
 
@@ -88,7 +98,6 @@ public class TextAnalyser extends Analyzer {
 
         StringBuffer multiplyStrings = new StringBuffer(this.text);
         for (Analyser item : analysers) {
-            // Log.log(multiplyStrings.toString());
             multiplyStrings = analyzeAndMultiply(multiplyStrings, item, this.indexers);
         }
         Collections.sort(this.indexers);
@@ -97,101 +106,10 @@ public class TextAnalyser extends Analyzer {
         }
 
         // build render tree and fill blanks
-        TextIndexer current = new TextIndexer(Element.TEXT, 0, this.text.length());
-        TextIndexer root = current;
-        for (TextIndexer item : this.indexers) {
-            if (item.start < current.end) {
-                if (item.start > current.start) {
-                    int fillerStart = current.start;
-                    if (Text.TEXT_BOLD.equals(current.type)) {
-                        fillerStart += 2;
-                    } else if (Text.TEXT_ITALIC.equals(current.type)) {
-                        fillerStart += 1;
-                    }
-                    TextIndexer filler = new TextIndexer(Element.TEXT, fillerStart, item.start);
-                    current.right = filler;
-                    filler.parent = current;
-                    current = filler;
-                }
-                if (current.parent != null && current == current.parent.right) {
-                    current.left = item;
-                    item.parent = current;
-                } else {
-                    current.right = item;
-                    item.parent = current;
-                }
-                current = item;
-            } else {
-                while (true) {
-                    TextIndexer parentOfCurrent = current;
-                    if (current == root) {
-                        break;
-                    }
-                    while (true) {
-                        if (parentOfCurrent == parentOfCurrent.parent.right) {
-                            parentOfCurrent = parentOfCurrent.parent;
-                            break;
-                        } else {
-                            parentOfCurrent = parentOfCurrent.parent;
-                        }
-                    }
-                    if (item.end < parentOfCurrent.end) {
-                        if (item.start > current.end) {
-                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, item.start);
-                            current.left = filler;
-                            filler.parent = current;
-                            current = filler;
-                        }
-                        item.parent = current;
-                        current.left = item;
-                        current = item;
-                        break;
-                    } else {
-                        if (parentOfCurrent.end >= current.end) {
-                            int fillerEnd = parentOfCurrent.end;
-                            if (Text.TEXT_BOLD.equals(current.type)) {
-                                fillerEnd -= 2;
-                            } else if (Text.TEXT_ITALIC.equals(current.type)) {
-                                fillerEnd -= 1;
-                            }
-                            TextIndexer filler = new TextIndexer(Element.TEXT, current.end, fillerEnd);
-                            current.left = filler;
-                            filler.parent = current;
-                        }
-                        current = parentOfCurrent;
-                    }
-                }
-            }
-        }
-        if (current.end < this.text.length()) {
-            while (true) {
-                TextIndexer parentOfCurrent = current;
-                while (true) {
-                    if (parentOfCurrent == parentOfCurrent.parent.right) {
-                        parentOfCurrent = parentOfCurrent.parent;
-                        break;
-                    } else {
-                        parentOfCurrent = parentOfCurrent.parent;
-                    }
-                }
-                if (parentOfCurrent.end > current.end) {
-                    int fillerEnd = parentOfCurrent.end;
-                    if (Text.TEXT_BOLD.equals(current.type)) {
-                        fillerEnd -= 2;
-                    } else if (Text.TEXT_ITALIC.equals(current.type)) {
-                        fillerEnd -= 1;
-                    }
-                    TextIndexer filler = new TextIndexer(Element.TEXT, current.end, fillerEnd);
-                    current.left = filler;
-                    filler.parent = current;
-                }
-                current = parentOfCurrent;
-                if (current == root) {
-                    break;
-                }
-            }
-        }
-        return root;
+        ReactTree rt = new ReactTree(new TextIndexer(Element.TEXT, 0, this.text.length()), this.text);
+        rt.buildReactTree(this.indexers);
+        rt.fillBlanks();
+        return rt.root;
     }
 
     private Element buildElementTree(TextIndexer ti) {
@@ -202,6 +120,7 @@ public class TextAnalyser extends Analyzer {
         Text t = new Text();
         t.append(this.text.substring(ti.start, ti.end));
         t.setType(ti.type);
+        t.setAcceptAnalyzed(false);
 
         t.setRight(buildElementTree(ti.right));
         t.setLeft(buildElementTree(ti.left));
@@ -210,7 +129,9 @@ public class TextAnalyser extends Analyzer {
 
     public Element analyze() {
         TextIndexer reactTree = this.analyzeElementsTypes();
-        return buildElementTree(reactTree);
+        Element tree = buildElementTree(reactTree);
+        tree.setAcceptAnalyzed(false);
+        return tree;
     }
 
     private static String generateString(int length) {
@@ -232,7 +153,25 @@ public class TextAnalyser extends Analyzer {
         int leftIndex = 0;
         for (String item : txts) {
             if (analyser.has(item)) {
+                if (analyser instanceof BoldAnalyser) {
+                    // fill dead zone of bold & italic
+                    StringBuffer boldString = new StringBuffer(origin.substring(leftIndex + 2, leftIndex + item.length() - 2));
+                    List<TextIndexer> subBoldIndexers = new ArrayList<>();
+
+
+                    List<Analyser> analysers = Arrays.asList(new BlockAnalyser(), new ImageAnalyser(), new LinkAnalyser(), new BoldAnalyser(), new ItalicAnalyser());
+                    for (Analyser subitem : analysers) {
+                        boldString = analyzeAndMultiply(boldString, subitem, subBoldIndexers);
+                    }
+                    if (subBoldIndexers.size() > 0) {
+                        // there're sub elements in bold string
+                        for (TextIndexer tiItem : subBoldIndexers) {
+                            indexers.add(new TextIndexer(tiItem.type, leftIndex + 2 + tiItem.start, leftIndex + 2 + tiItem.end));
+                        }
+                    }
+                }
                 indexers.add(new TextIndexer(analyser.getType(), leftIndex, leftIndex + item.length()));
+
                 multiplyStrings.append(generateString(item.length()));
             } else {
                 multiplyStrings.append(item);
@@ -240,6 +179,127 @@ public class TextAnalyser extends Analyzer {
             leftIndex += item.length();
         }
         return multiplyStrings;
+    }
+
+    private static class ReactTree {
+        private TextIndexer root;
+        private final String context;
+
+        public ReactTree(TextIndexer root, String context) {
+            this.root = root;
+            this.context = context;
+        }
+
+        private TextIndexer buildReactTree(List<TextIndexer> nodes) {
+            if (nodes == null || nodes.size() == 0) {
+                return null;
+            }
+            for (TextIndexer item : nodes) {
+                insertTextIndexer(item);
+            }
+            return this.root;
+        }
+
+        private void fillBlanks() {
+            fillBlanks(this.root);
+        }
+
+        private void fillBlanks(TextIndexer node) {
+            if (node == null) {
+                return;
+            }
+            if (node.right != null) {
+                int minStart = node.right.start;
+                int maxEnd = node.right.end;
+                TextIndexer current = node.right, lastLeft = current;
+                while (current != null) {
+                    {
+                        // fill middle and find the max end
+                        int currentEnd = current.end;
+                        TextIndexer ti = current.left;
+                        if (ti == null) {
+                            maxEnd = current.end;
+                            break;
+                        }
+                        int nextStart = ti.start;
+                        if (currentEnd + 1 < nextStart) {
+                            TextIndexer filler = new TextIndexer(Element.TEXT, currentEnd + 1, nextStart - 1);
+                            filler.parent = current;
+                            filler.left = ti;
+                            current.left = filler;
+                            ti.parent = filler;
+
+                            current = filler;
+                        }
+                    }
+                    maxEnd = current.end;
+                    lastLeft = current;
+                    current = current.left;
+                }
+                if (node.start < minStart) {
+                    // fill start
+                    int fillStartStart = node.start;
+                    if (Text.TEXT_ITALIC.equals(node.type)) {
+                        fillStartStart += 1;
+                    } else if (Text.TEXT_BOLD.equals(node.type)) {
+                        fillStartStart += 2;
+                    } else if (Text.TEXT_LINK.equals(node.type)) {
+                        fillStartStart += 1;
+                    }
+                    TextIndexer filler = new TextIndexer(Element.TEXT, fillStartStart, minStart);
+                    filler.parent = node;
+                    filler.left = node.right;
+                    node.right.parent = filler;
+                    node.right = filler;
+                }
+                if (maxEnd < node.end) {
+                    // fill end
+                    int fillEndEnd = node.end;
+                    if (Text.TEXT_ITALIC.equals(node.type)) {
+                        fillEndEnd -= 1;
+                    } else if (Text.TEXT_BOLD.equals(node.type)) {
+                        fillEndEnd -= 2;
+                    } else if (Text.TEXT_LINK.equals(node.type)) {
+                        String tmp = this.context.substring(maxEnd, node.end);
+                        int linkTextEnd = tmp.indexOf(']');
+                        fillEndEnd = maxEnd + linkTextEnd;
+                    }
+                    TextIndexer filler = new TextIndexer(Element.TEXT, maxEnd, fillEndEnd);
+                    filler.parent = lastLeft;
+                    lastLeft.left = filler;
+                }
+            }
+            fillBlanks(node.right);
+            fillBlanks(node.left);
+        }
+
+        private void insertTextIndexer(TextIndexer node) {
+            if (root == null) {
+                root = node;
+                return;
+            }
+            TextIndexer current = root;
+            while (true) {
+                if (node.end <= current.end) {
+                    if (current.right == null) {
+                        current.right = node;
+                        node.parent = current;
+                        break;
+                    } else {
+                        current = current.right;
+                    }
+                } else {
+                    if (current.left == null) {
+                        current.left = node;
+                        node.parent = current;
+                        break;
+                    } else {
+                        current = current.left;
+                    }
+                }
+            }
+        }
+
     }
 
     private interface Analyser {
