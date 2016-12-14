@@ -18,6 +18,7 @@ public abstract class Analyzer implements Comparable<Analyzer> {
     public static final int ANALYZER_LI = 2499;
     public static final int ANALYZER_SEPARATOR = 2000;
     public static final int ANALYZER_TABLE = 1000;
+    public static final int ANALYZER_PARAGRAPH = 10;
     public static final int ANALYZER_TEXT = 0;
 
     /**

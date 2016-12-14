@@ -126,6 +126,8 @@ public class Parser {
         liAnalyzer.addSubAnalyzers(listAnalyzer);
         this.registerAnalyzer(listAnalyzer);
 
+        this.registerAnalyzer(new ParagraphAnalyzer());
+
         this.registerAnalyzer(new TableAnalyzer());
     }
 

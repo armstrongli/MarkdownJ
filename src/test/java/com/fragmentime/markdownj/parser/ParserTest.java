@@ -24,4 +24,12 @@ public class ParserTest {
         String result = Parser.parseStrings(e.getData());
         System.out.println(result);
     }
+
+    @Test
+    public void TestText() throws Exception {
+        Element e = ResourceLoader.LoadResourceFromClass(this.getClass(), "/test-text.md");
+        Assert.assertNotNull(e);
+        String result = Parser.parseStrings(e.getData());
+        System.out.println(result);
+    }
 }

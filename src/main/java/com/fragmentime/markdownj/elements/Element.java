@@ -13,6 +13,7 @@ public class Element {
     public static final String BLOCK = "block";
     public static final String LIST = "list";
     public static final String SEPARATOR = "separator";
+    public static final String PARAGRAPH = "paragraph";
     public static final String TABLE = "table";
     public static final String TEXT = "text";
     public static final String LI = "li";
